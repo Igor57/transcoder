@@ -10,11 +10,9 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 
-	"github.com/floostack/transcoder"
-	"github.com/floostack/transcoder/utils"
+	"github.com/Igor57/transcoder"
 )
 
 // Transcoder ...
@@ -35,28 +33,30 @@ func New(cfg *Config) transcoder.Transcoder {
 	return &Transcoder{config: cfg}
 }
 
-// Start ...
-func (t *Transcoder) Start(opts transcoder.Options) (<-chan transcoder.Progress, error) {
+// StartAndReturnCmd ...
+func (t *Transcoder) StartAndReturnCmd(optsBeforeInput transcoder.Options, opts transcoder.Options) (<-chan transcoder.Progress, *exec.Cmd, error) {
 
 	var stderrIn io.ReadCloser
-
+	var err error
 	out := make(chan transcoder.Progress)
 
 	defer t.closePipes()
 
 	// Validates config
 	if err := t.validate(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Get file metadata
-	_, err := t.GetMetadata()
-	if err != nil {
-		return nil, err
-	}
-
+	/*
+		_, err := t.GetMetadata()
+		if err != nil {
+			return nil, err
+		}
+	*/
+	args := append(optsBeforeInput.GetStrArguments(), []string{"-i", t.input}...)
 	// Append input file and standard options
-	args := append([]string{"-i", t.input}, opts.GetStrArguments()...)
+	args = append(args, opts.GetStrArguments()...)
 	outputLength := len(t.output)
 	optionsLength := len(t.options)
 
@@ -82,6 +82,93 @@ func (t *Transcoder) Start(opts transcoder.Options) (<-chan transcoder.Progress,
 	}
 
 	// Initialize command
+	fmt.Println(strings.Join(args, " "))
+	cmd := exec.Command(t.config.FfmpegBinPath, args...)
+
+	// If progresss enabled, get stderr pipe and start progress process
+	if t.config.ProgressEnabled && !t.config.Verbose {
+		stderrIn, err = cmd.StderrPipe()
+		if err != nil {
+			return nil, nil, fmt.Errorf("Failed getting transcoding progress (%s) with args (%s) with error %s", t.config.FfmpegBinPath, args, err)
+		}
+	}
+
+	if t.config.Verbose {
+		cmd.Stderr = os.Stdout
+	}
+
+	// Start process
+	err = cmd.Start()
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed starting transcoding (%s) with args (%s) with error %s", t.config.FfmpegBinPath, args, err)
+	}
+
+	if t.config.ProgressEnabled && !t.config.Verbose {
+		go func() {
+			t.progress(stderrIn, out)
+		}()
+
+		go func() {
+			defer close(out)
+			err = cmd.Wait()
+		}()
+	} else {
+		err = cmd.Wait()
+	}
+
+	return out, cmd, nil
+}
+
+// Start ...
+func (t *Transcoder) Start(optsBeforeInput transcoder.Options, opts transcoder.Options) (<-chan transcoder.Progress, error) {
+
+	var stderrIn io.ReadCloser
+	var err error
+	out := make(chan transcoder.Progress)
+
+	defer t.closePipes()
+
+	// Validates config
+	if err := t.validate(); err != nil {
+		return nil, err
+	}
+
+	// Get file metadata
+	/*
+		_, err := t.GetMetadata()
+		if err != nil {
+			return nil, err
+		}
+	*/
+	args := append(optsBeforeInput.GetStrArguments(), []string{"-i", t.input}...)
+	// Append input file and standard options
+	args = append(args, opts.GetStrArguments()...)
+	outputLength := len(t.output)
+	optionsLength := len(t.options)
+
+	if outputLength == 1 && optionsLength == 0 {
+		// Just append the 1 output file we've got
+		args = append(args, t.output[0])
+	} else {
+		for index, out := range t.output {
+			// Get executable flags
+			// If we are at the last output file but still have several options, append them all at once
+			if index == outputLength-1 && outputLength < optionsLength {
+				for i := index; i < len(t.options); i++ {
+					args = append(args, t.options[i]...)
+				}
+				// Otherwise just append the current options
+			} else {
+				args = append(args, t.options[index]...)
+			}
+
+			// Append output flag
+			args = append(args, out)
+		}
+	}
+
+	// Initialize command
+	fmt.Println(strings.Join(args, " "))
 	cmd := exec.Command(t.config.FfmpegBinPath, args...)
 
 	// If progresss enabled, get stderr pipe and start progress process
@@ -192,7 +279,7 @@ func (t *Transcoder) validate() error {
 }
 
 // GetMetadata Returns metadata for the specified input file
-func (t *Transcoder) GetMetadata() ( transcoder.Metadata, error) {
+func (t *Transcoder) GetMetadata() (transcoder.Metadata, error) {
 
 	if t.config.FfprobeBinPath != "" {
 		var outb, errb bytes.Buffer
@@ -298,11 +385,11 @@ func (t *Transcoder) progress(stream io.ReadCloser, out chan transcoder.Progress
 				}
 			}
 
-			timesec := utils.DurToSec(currentTime)
-			dursec, _ := strconv.ParseFloat(t.metadata.GetFormat().GetDuration(), 64)
+			//timesec := utils.DurToSec(currentTime)
+			//dursec, _ := strconv.ParseFloat(t.metadata.GetFormat().GetDuration(), 64)
 
-			progress := (timesec * 100) / dursec
-			Progress.Progress = progress
+			//progress := (timesec * 100) / dursec
+			//Progress.Progress = progress
 
 			Progress.CurrentBitrate = currentBitrate
 			Progress.FramesProcessed = framesProcessed

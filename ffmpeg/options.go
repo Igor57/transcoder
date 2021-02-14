@@ -7,6 +7,13 @@ import (
 
 // Options defines allowed FFmpeg arguments
 type Options struct {
+	Listen                *int              `flag:"-listen"`
+	FilterComplex         *string           `flag:"-filter_complex"`
+	ScThreshold           *int              `flag:"-sc_threshold"`
+	Maps                  []string          `flag:"-map"`
+	HlsFlags              *string           `flag:"-hls_flags"`
+	UseLocaltimeMkdir     *int              `flag:"-use_localtime_mkdir"`
+	VarStreamMap          *string           `flag:"-var_stream_map"`
 	Aspect                *string           `flag:"-aspect"`
 	Resolution            *string           `flag:"-s"`
 	VideoBitRate          *string           `flag:"-b:v"`
@@ -102,7 +109,7 @@ func (opts Options) GetStrArguments() []string {
 					values = append(values, k, fmt.Sprintf("%v", v))
 				}
 			}
-			
+
 			if vi, ok := value.(*int); ok {
 				values = append(values, flag, fmt.Sprintf("%d", *vi))
 			}

@@ -2,11 +2,13 @@ package transcoder
 
 import (
 	"io"
+	"os/exec"
 )
 
 // Transcoder ...
 type Transcoder interface {
-	Start(opts Options) (<-chan Progress, error)
+	Start(optsBeforeInput Options, opts Options) (<-chan Progress, error)
+	StartAndReturnCmd(optsBeforeInput Options, opts Options) (<-chan Progress, *exec.Cmd, error)
 	Input(i string) Transcoder
 	InputPipe(w *io.WriteCloser, r *io.ReadCloser) Transcoder
 	Output(o string) Transcoder
