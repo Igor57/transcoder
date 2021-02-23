@@ -10,7 +10,6 @@ type Options struct {
 	Listen                *int              `flag:"-listen"`
 	FilterComplex         *string           `flag:"-filter_complex"`
 	ScThreshold           *int              `flag:"-sc_threshold"`
-	VarStreamMap          *string           `flag:"-var_stream_map"`
 	Aspect                *string           `flag:"-aspect"`
 	Resolution            *string           `flag:"-s"`
 	VideoBitRate          *string           `flag:"-b:v"`
@@ -52,10 +51,11 @@ type Options struct {
 	HlsPlaylistType       *string           `flag:"-hls_playlist_type"`
 	HlsListSize           *int              `flag:"-hls_list_size"`
 	HlsSegmentDuration    *int              `flag:"-hls_time"`
-	HlsMasterPlaylistName *string           `flag:"-master_pl_name"`
-	HlsSegmentFilename    *string           `flag:"-hls_segment_filename"`
 	HlsFlags              *string           `flag:"-hls_flags"`
 	UseLocaltimeMkdir     *int              `flag:"-use_localtime_mkdir"`
+	HlsMasterPlaylistName *string           `flag:"-master_pl_name"`
+	HlsSegmentFilename    *string           `flag:"-hls_segment_filename"`
+	VarStreamMap          *string           `flag:"-var_stream_map"`
 	HTTPMethod            *string           `flag:"-method"`
 	HTTPKeepAlive         *bool             `flag:"-multiple_requests"`
 	Hwaccel               *string           `flag:"-hwaccel"`
