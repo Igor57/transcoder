@@ -10,9 +10,6 @@ type Options struct {
 	Listen                *int              `flag:"-listen"`
 	FilterComplex         *string           `flag:"-filter_complex"`
 	ScThreshold           *int              `flag:"-sc_threshold"`
-	Maps                  []string          `flag:"-map"`
-	HlsFlags              *string           `flag:"-hls_flags"`
-	UseLocaltimeMkdir     *int              `flag:"-use_localtime_mkdir"`
 	VarStreamMap          *string           `flag:"-var_stream_map"`
 	Aspect                *string           `flag:"-aspect"`
 	Resolution            *string           `flag:"-s"`
@@ -46,6 +43,7 @@ type Options struct {
 	SeekUsingTimestamp    *bool             `flag:"-seek_timestamp"`
 	MovFlags              *string           `flag:"-movflags"`
 	HideBanner            *bool             `flag:"-hide_banner"`
+	Maps                  []string          `flag:"-map"`
 	OutputFormat          *string           `flag:"-f"`
 	CopyTs                *bool             `flag:"-copyts"`
 	NativeFramerateInput  *bool             `flag:"-re"`
@@ -56,6 +54,8 @@ type Options struct {
 	HlsSegmentDuration    *int              `flag:"-hls_time"`
 	HlsMasterPlaylistName *string           `flag:"-master_pl_name"`
 	HlsSegmentFilename    *string           `flag:"-hls_segment_filename"`
+	HlsFlags              *string           `flag:"-hls_flags"`
+	UseLocaltimeMkdir     *int              `flag:"-use_localtime_mkdir"`
 	HTTPMethod            *string           `flag:"-method"`
 	HTTPKeepAlive         *bool             `flag:"-multiple_requests"`
 	Hwaccel               *string           `flag:"-hwaccel"`
