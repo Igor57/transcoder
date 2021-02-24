@@ -82,8 +82,15 @@ func (t *Transcoder) StartAndReturnCmd(optsBeforeInput transcoder.Options, opts 
 	}
 
 	// Initialize command
-	fmt.Println(strings.Join(args, " "))
-	cmd := exec.Command(t.config.FfmpegBinPath, args...)
+	dirtyCommandSlice := append([]string{t.config.FfmpegBinPath}, args...)
+	dirtyCommand := strings.Join(dirtyCommandSlice, " ")
+	fmt.Println(dirtyCommand)
+	var cmd *exec.Cmd
+	if t.config.DirtyCMD {
+		cmd = exec.Command(dirtyCommand)
+	} else {
+		cmd = exec.Command(t.config.FfmpegBinPath, args...)
+	}
 
 	// If progresss enabled, get stderr pipe and start progress process
 	if t.config.ProgressEnabled && !t.config.Verbose {

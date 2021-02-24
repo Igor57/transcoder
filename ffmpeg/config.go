@@ -6,4 +6,5 @@ type Config struct {
 	FfprobeBinPath  string
 	ProgressEnabled bool
 	Verbose         bool
+	DirtyCMD        bool
 }
