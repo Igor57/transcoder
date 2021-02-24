@@ -82,12 +82,11 @@ func (t *Transcoder) StartAndReturnCmd(optsBeforeInput transcoder.Options, opts 
 	}
 
 	// Initialize command
-	dirtyCommandSlice := append([]string{t.config.FfmpegBinPath}, args...)
-	dirtyCommand := strings.Join(dirtyCommandSlice, " ")
-	fmt.Println(dirtyCommand)
+	dirtyCommandArgs := strings.Join(args, " ")
+	fmt.Println(dirtyCommandArgs)
 	var cmd *exec.Cmd
 	if t.config.DirtyCMD {
-		cmd = exec.Command(dirtyCommand)
+		cmd = exec.Command(t.config.FfmpegBinPath, dirtyCommandArgs)
 	} else {
 		cmd = exec.Command(t.config.FfmpegBinPath, args...)
 	}
